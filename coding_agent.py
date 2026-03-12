@@ -4,13 +4,36 @@ import requests
 import json
 import json_repair
 
+
 def run_command(cmd:str):
     result =os.popen(cmd).read()
     return result
 
+def write_file(filepath: str, content: str):
+    try:
+        # Create directories if they don't exist
+        os.makedirs(os.path.dirname(filepath) or '.', exist_ok=True)
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(content)
+        return f"Success: Wrote content to {filepath}"
+    except Exception as e:
+        return f"Error writing file: {e}"
+    
+
+def read_file(filepath: str):
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            content = f.read()
+            # Truncate if it's massive so we don't blow up the context window
+            return content[:2000] + "\n...[truncated]" if len(content) > 2000 else content
+    except Exception as e:
+        return f"Error reading file: {e}"
+
 available_tools ={
 
-    "run_command": run_command
+    "run_command": run_command,
+    "read_file": read_file,           
+    "write_file": write_file
 
 }
 SYSTEM_PROMPT = """You are an expert CLI Coding AI Assistant. You resolve user programming queries using a strict Chain of Thought (CoT) process.
