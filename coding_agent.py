@@ -27,13 +27,40 @@ def read_file(filepath: str):
             # Truncate if it's massive so we don't blow up the context window
             return content[:2000] + "\n...[truncated]" if len(content) > 2000 else content
     except Exception as e:
+
+
         return f"Error reading file: {e}"
+
+def get_weather(city: str):
+    url = f"https://wttr.in/{city.lower()}?format=%C+%t"  
+    response = requests.get(url)  
+    if response.status_code == 200:
+        return f"The weather in {city} is: {response.text}"
+    return "Something went wrong"
+
+
+def search_wikipedia(query: str):
+    # Format the query for the Wikipedia URL
+    formatted_query = query.replace(' ', '_')
+    url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{formatted_query}"
+    
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
+            return data.get("extract", "No summary found on this page.")
+        else:
+            return f"No Wikipedia page found exactly matching '{query}'."
+    except Exception as e:
+        return f"Error searching Wikipedia: {e}"
 
 available_tools ={
 
     "run_command": run_command,
     "read_file": read_file,           
-    "write_file": write_file
+    "write_file": write_file,
+    "get_weather": get_weather,
+    "search_wikipedia": search_wikipedia
 
 }
 SYSTEM_PROMPT = """You are an expert CLI Coding AI Assistant. You resolve user programming queries using a strict Chain of Thought (CoT) process.
